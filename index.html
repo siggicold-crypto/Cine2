@@ -12,6 +12,7 @@
       --bg: #0b0d14;
       --card-bg: #161922;
       --accent: #ffffff;
+      --accent-text: #000000;
       --text: #f3f4f6;
       --muted: #9ca3af;
     }
@@ -35,7 +36,7 @@
       z-index: 1000;
       display: flex;
       align-items: center;
-      gap: 15px;
+      gap: 12px;
       background: rgba(22, 25, 34, 0.85);
       backdrop-filter: blur(16px);
       padding: 8px 18px;
@@ -58,8 +59,8 @@
     }
 
     .nav-btn.active, .nav-btn:hover {
-      background: #ffffff;
-      color: #000000;
+      background: var(--accent);
+      color: var(--accent-text);
     }
 
     .search-box {
@@ -77,7 +78,7 @@
       outline: none;
       color: #fff;
       font-size: 0.85rem;
-      width: 140px;
+      width: 130px;
       padding-left: 8px;
     }
 
@@ -88,7 +89,7 @@
       z-index: 1000;
       font-size: 1.5rem;
       font-weight: 800;
-      color: #fff;
+      color: var(--accent);
     }
 
     /* Hero Banner */
@@ -145,8 +146,8 @@
     }
 
     .btn-play {
-      background: #ffffff;
-      color: #000000;
+      background: var(--accent);
+      color: var(--accent-text);
       padding: 12px 28px;
       border-radius: 30px;
       border: none;
@@ -204,7 +205,7 @@
       display: block;
     }
 
-    /* Video Player Modal */
+    /* Video Player & Settings Modals */
     .modal {
       display: none;
       position: fixed;
@@ -231,6 +232,34 @@
       border: none;
     }
 
+    .settings-card {
+      background: var(--card-bg);
+      padding: 30px;
+      border-radius: 20px;
+      width: 320px;
+      text-align: center;
+      border: 1px solid rgba(255,255,255,0.1);
+      position: relative;
+    }
+
+    .color-options {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .color-dot {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: transform 0.2s;
+    }
+
+    .color-dot:hover { transform: scale(1.15); }
+
     .close-modal {
       position: absolute;
       top: -40px;
@@ -247,8 +276,8 @@
 
   <nav>
     <a href="#" class="nav-btn active"><i class="fa-solid fa-house"></i> Home</a>
-    <a href="#" class="nav-btn">Movies</a>
-    <a href="#" class="nav-btn">Shows</a>
+    <a href="#mylist-section" class="nav-btn"><i class="fa-solid fa-bookmark"></i> My List</a>
+    <div class="nav-btn" onclick="openSettings()"><i class="fa-solid fa-gear"></i> Settings</div>
     <div class="search-box">
       <i class="fa-solid fa-magnifying-glass" style="color: var(--muted); font-size: 0.8rem;"></i>
       <input type="text" id="searchInput" placeholder="Search..." onkeyup="handleSearch(event)">
@@ -265,6 +294,11 @@
         <button class="btn-play" id="hero-play-btn"><i class="fa-solid fa-play"></i> Watch Movie</button>
       </div>
     </div>
+  </div>
+
+  <div class="section" id="mylist-section">
+    <h2 class="section-title">📌 My List</h2>
+    <div class="row" id="my-list-row"><p style="color: var(--muted);">No saved movies yet.</p></div>
   </div>
 
   <div class="section">
@@ -289,9 +323,100 @@
     </div>
   </div>
 
+  <div class="modal" id="settingsModal">
+    <div class="settings-card">
+      <span class="close-modal" style="top: 10px; right: 15px;" onclick="closeSettings()">&times;</span>
+      <h3>Accent Color</h3>
+      <div class="color-options">
+        <div class="color-dot" style="background: #ffffff;" onclick="changeColor('#ffffff', '#000000')"></div>
+        <div class="color-dot" style="background: #e50914;" onclick="changeColor('#e50914', '#ffffff')"></div>
+        <div class="color-dot" style="background: #0071e3;" onclick="changeColor('#0071e3', '#ffffff')"></div>
+        <div class="color-dot" style="background: #10b981;" onclick="changeColor('#10b981', '#ffffff')"></div>
+        <div class="color-dot" style="background: #8b5cf6;" onclick="changeColor('#8b5cf6', '#ffffff')"></div>
+      </div>
+    </div>
+  </div>
+
   <script>
     const API_KEY = 'a3677549461e9117a4628505903cbad9';
 
     async function init() {
       fetchCategory(`https://api.themoviedb.org/3/trending/movie/day?api_key=${API_KEY}`, 'trending-movies', true);
-      fetchCategory(`https
+      fetchCategory(`https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=christmas`, 'christmas-movies');
+      fetchCategory(`https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=halloween`, 'halloween-movies');
+    }
+
+    async function fetchCategory(url, containerId, isTrending = false) {
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.results && data.results.length > 0) {
+          if (isTrending) setupHero(data.results[0]);
+          renderRow(data.results, containerId);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function setupHero(item) {
+      document.getElementById('hero').style.backgroundImage = `url(https://image.tmdb.org/t/p/original${item.backdrop_path})`;
+      document.getElementById('hero-title').innerText = item.title;
+      document.getElementById('hero-meta').innerHTML = `
+        <span>★ ${item.vote_average.toFixed(1)}</span>
+        <span>•</span>
+        <span>${(item.release_date || '').split('-')[0]}</span>
+      `;
+      document.getElementById('hero-desc').innerText = item.overview;
+      document.getElementById('hero-play-btn').onclick = () => playMovie(item.id);
+    }
+
+    function renderRow(items, elementId) {
+      const container = document.getElementById(elementId);
+      const validItems = items.filter(i => i.poster_path);
+      container.innerHTML = validItems.map(item => `
+        <div class="card" onclick="playMovie(${item.id})">
+          <img src="https://image.tmdb.org/t/p/w500${item.poster_path}" alt="${item.title}">
+        </div>
+      `).join('');
+    }
+
+    function playMovie(id) {
+      document.getElementById('moviePlayer').src = `https://vidsrc.cc/v2/embed/movie/${id}`;
+      document.getElementById('videoModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('videoModal').style.display = 'none';
+      document.getElementById('moviePlayer').src = '';
+    }
+
+    function openSettings() {
+      document.getElementById('settingsModal').style.display = 'flex';
+    }
+
+    function closeSettings() {
+      document.getElementById('settingsModal').style.display = 'none';
+    }
+
+    function changeColor(accentColor, textColor) {
+      document.documentElement.style.setProperty('--accent', accentColor);
+      document.documentElement.style.setProperty('--accent-text', textColor);
+      closeSettings();
+    }
+
+    async function handleSearch(e) {
+      const query = e.target.value.trim();
+      if (query.length > 2) {
+        document.getElementById('row1-title').innerText = `Results for "${query}"`;
+        fetchCategory(`https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}`, 'trending-movies');
+      } else if (query.length === 0) {
+        document.getElementById('row1-title').innerText = 'Trending Movies';
+        fetchCategory(`https://api.themoviedb.org/3/trending/movie/day?api_key=${API_KEY}`, 'trending-movies');
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
