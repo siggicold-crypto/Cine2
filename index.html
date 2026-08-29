@@ -78,7 +78,7 @@
       outline: none;
       color: #fff;
       font-size: 0.85rem;
-      width: 130px;
+      width: 140px;
       padding-left: 8px;
     }
 
@@ -280,7 +280,7 @@
     <div class="nav-btn" onclick="openSettings()"><i class="fa-solid fa-gear"></i> Settings</div>
     <div class="search-box">
       <i class="fa-solid fa-magnifying-glass" style="color: var(--muted); font-size: 0.8rem;"></i>
-      <input type="text" id="searchInput" placeholder="Search..." onkeyup="handleSearch(event)">
+      <input type="text" id="searchInput" placeholder="Search movies..." oninput="handleSearch(event)">
     </div>
   </nav>
 
@@ -316,6 +316,7 @@
     <div class="row" id="halloween-movies"></div>
   </div>
 
+  <!-- Video Player Modal -->
   <div class="modal" id="videoModal">
     <div class="modal-content">
       <span class="close-modal" onclick="closeModal()">&times;</span>
@@ -323,6 +324,7 @@
     </div>
   </div>
 
+  <!-- Settings Modal -->
   <div class="modal" id="settingsModal">
     <div class="settings-card">
       <span class="close-modal" style="top: 10px; right: 15px;" onclick="closeSettings()">&times;</span>
@@ -350,9 +352,13 @@
       try {
         const res = await fetch(url);
         const data = await res.json();
+        const container = document.getElementById(containerId);
+
         if (data.results && data.results.length > 0) {
           if (isTrending) setupHero(data.results[0]);
           renderRow(data.results, containerId);
+        } else {
+          container.innerHTML = '<p style="color: var(--muted);">No results found.</p>';
         }
       } catch (err) {
         console.error(err);
@@ -374,6 +380,12 @@
     function renderRow(items, elementId) {
       const container = document.getElementById(elementId);
       const validItems = items.filter(i => i.poster_path);
+      
+      if (validItems.length === 0) {
+        container.innerHTML = '<p style="color: var(--muted);">No posters available.</p>';
+        return;
+      }
+
       container.innerHTML = validItems.map(item => `
         <div class="card" onclick="playMovie(${item.id})">
           <img src="https://image.tmdb.org/t/p/w500${item.poster_path}" alt="${item.title}">
@@ -405,9 +417,9 @@
       closeSettings();
     }
 
-    async function handleSearch(e) {
+    function handleSearch(e) {
       const query = e.target.value.trim();
-      if (query.length > 2) {
+      if (query.length > 1) {
         document.getElementById('row1-title').innerText = `Results for "${query}"`;
         fetchCategory(`https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}`, 'trending-movies');
       } else if (query.length === 0) {
