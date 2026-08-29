@@ -3,192 +3,262 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cine2 | Stream Movies</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <title>Cine2 | Stream</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
-      --bg-color: #0b0e14;
-      --card-bg: #151922;
-      --accent: #00e5ff;
-      --accent-hover: #00b3cc;
-      --text-main: #f3f4f6;
-      --text-muted: #9ca3af;
+      --bg: #0b0d14;
+      --card-bg: #161922;
+      --accent: #ffffff;
+      --text: #f3f4f6;
+      --muted: #9ca3af;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    
+
     body {
       font-family: 'Inter', sans-serif;
-      background-color: var(--bg-color);
-      color: var(--text-main);
-      padding: 40px 20px;
-      min-height: 100vh;
+      background-color: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
     }
 
-    header {
-      max-width: 1200px;
-      margin: 0 auto 40px;
-      text-align: center;
+    /* Floating Navigation Bar */
+    nav {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      background: rgba(22, 25, 34, 0.75);
+      backdrop-filter: blur(16px);
+      padding: 8px 16px;
+      border-radius: 40px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    h1 {
-      font-size: 2.5rem;
+    .nav-btn {
+      color: var(--muted);
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .nav-btn.active, .nav-btn:hover {
+      background: #ffffff;
+      color: #000000;
+    }
+
+    /* Floating Logo */
+    .brand-logo {
+      position: fixed;
+      top: 25px;
+      left: 30px;
+      z-index: 1000;
+      font-size: 1.5rem;
       font-weight: 800;
-      letter-spacing: -1px;
-      background: linear-gradient(45deg, #00e5ff, #7c4dff);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      color: #fff;
+    }
+
+    /* Hero Banner Section */
+    .hero {
+      position: relative;
+      height: 80vh;
+      width: 100%;
+      background-size: cover;
+      background-position: center top;
+      display: flex;
+      align-items: flex-end;
+      padding: 60px 80px;
+    }
+
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(11,13,20,0.2) 0%, rgba(11,13,20,0.8) 70%, var(--bg) 100%),
+                  linear-gradient(90deg, rgba(11,13,20,0.9) 0%, rgba(11,13,20,0) 60%);
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 10;
+      max-width: 600px;
+    }
+
+    .hero-title {
+      font-size: 3.8rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      line-height: 1.1;
+      margin-bottom: 12px;
+    }
+
+    .hero-meta {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 15px;
+    }
+
+    .hero-desc {
+      font-size: 0.95rem;
+      color: #d1d5db;
+      line-height: 1.5;
+      margin-bottom: 25px;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn-play {
+      background: #ffffff;
+      color: #000000;
+      padding: 12px 28px;
+      border-radius: 30px;
+      border: none;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-icon {
+      background: rgba(255, 255, 255, 0.15);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+    }
+
+    /* Content Rows */
+    .section {
+      padding: 20px 80px 40px;
+    }
+
+    .section-title {
+      font-size: 1.3rem;
+      font-weight: 700;
       margin-bottom: 20px;
     }
 
-    .search-container {
+    .row {
       display: flex;
-      justify-content: center;
-      gap: 10px;
-      max-width: 500px;
-      margin: 0 auto;
+      gap: 20px;
+      overflow-x: auto;
+      padding-bottom: 15px;
+      scroll-behavior: smooth;
     }
 
-    input {
-      width: 100%;
-      padding: 14px 20px;
-      border-radius: 30px;
-      border: 1px solid #2a2f3d;
-      background: var(--card-bg);
-      color: #fff;
-      font-size: 1rem;
-      outline: none;
-      transition: all 0.3s ease;
-    }
-
-    input:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 15px rgba(0, 229, 255, 0.2);
-    }
-
-    button {
-      padding: 14px 28px;
-      border-radius: 30px;
-      border: none;
-      background: var(--accent);
-      color: #000;
-      font-weight: 600;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    button:hover {
-      background: var(--accent-hover);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 20px rgba(0, 229, 255, 0.4);
-    }
-
-    .movie-grid {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: 25px;
-    }
+    .row::-webkit-scrollbar { display: none; }
 
     .card {
-      background: var(--card-bg);
-      border-radius: 12px;
+      flex: 0 0 200px;
+      border-radius: 16px;
       overflow: hidden;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      background: var(--card-bg);
       position: relative;
-      border: 1px solid #2a2f3d;
+      transition: transform 0.3s ease;
+      cursor: pointer;
     }
 
     .card:hover {
-      transform: translateY(-8px);
-      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.5);
-      border-color: #3b4254;
+      transform: scale(1.05);
     }
 
     .card img {
       width: 100%;
-      height: 270px;
+      height: 300px;
       object-fit: cover;
-      display: block;
-    }
-
-    .card-info { padding: 15px; }
-
-    .card h3 {
-      font-size: 0.95rem;
-      font-weight: 600;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      margin-bottom: 8px;
-    }
-
-    .rating {
-      font-size: 0.85rem;
-      color: #ffd700;
-      font-weight: 600;
     }
   </style>
 </head>
 <body>
 
-  <header>
-    <h1>Cine2</h1>
-    <div class="search-container">
-      <input type="text" id="searchInput" placeholder="Search movies...">
-      <button onclick="searchMovies()">Search</button>
-    </div>
-  </header>
+  <div class="brand-logo"><i class="fa-solid fa-clapperboard"></i></div>
 
-  <main id="movies" class="movie-grid">Loading top movies...</main>
+  <nav>
+    <a href="#" class="nav-btn active"><i class="fa-solid fa-house"></i> Home</a>
+    <a href="#" class="nav-btn">Movies</a>
+    <a href="#" class="nav-btn">Shows</a>
+    <a href="#" class="nav-btn">My List</a>
+  </nav>
+
+  <div class="hero" id="hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <h1 class="hero-title" id="hero-title">Loading...</h1>
+      <div class="hero-meta" id="hero-meta"></div>
+      <p class="hero-desc" id="hero-desc"></p>
+      <div class="hero-actions">
+        <button class="btn-play"><i class="fa-solid fa-play"></i> Play</button>
+        <button class="btn-icon"><i class="fa-solid fa-plus"></i></button>
+        <button class="btn-icon"><i class="fa-solid fa-circle-info"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">Trending Movies</h2>
+    <div class="row" id="trending-movies"></div>
+  </div>
 
   <script>
     const API_KEY = 'a3677549461e9117a4628505903cbad9';
 
-    fetchMovies(`https://api.themoviedb.org/3/trending/movie/day?api_key=${API_KEY}`);
+    async function init() {
+      const res = await fetch(`https://api.themoviedb.org/3/trending/movie/day?api_key=${API_KEY}`);
+      const data = await res.json();
+      const movies = data.results;
 
-    function fetchMovies(url) {
-      fetch(url)
-        .then(res => res.json())
-        .then(data => {
-          const grid = document.getElementById('movies');
-          grid.innerHTML = '';
-
-          if (!data.results || data.results.length === 0) {
-            grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--text-muted);">No movies found.</p>';
-            return;
-          }
-
-          data.results.forEach(movie => {
-            const poster = movie.poster_path 
-              ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` 
-              : 'https://via.placeholder.com/500x750?text=No+Poster';
-
-            grid.innerHTML += `
-              <div class="card">
-                <img src="${poster}" alt="${movie.title}">
-                <div class="card-info">
-                  <h3>${movie.title}</h3>
-                  <div class="rating">★ ${movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A'}</div>
-                </div>
-              </div>
-            `;
-          });
-        })
-        .catch(() => {
-          document.getElementById('movies').innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--text-muted);">Failed to load content.</p>';
-        });
-    }
-
-    function searchMovies() {
-      const query = document.getElementById('searchInput').value;
-      if (query.trim() !== '') {
-        const searchURL = `https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}`;
-        fetchMovies(searchURL);
+      if (movies.length > 0) {
+        setupHero(movies[0]);
+        setupRow(movies, 'trending-movies');
       }
     }
+
+    function setupHero(movie) {
+      document.getElementById('hero').style.backgroundImage = `url(https://image.tmdb.org/t/p/original${movie.backdrop_path})`;
+      document.getElementById('hero-title').innerText = movie.title;
+      document.getElementById('hero-meta').innerHTML = `
+        <span>★ ${movie.vote_average.toFixed(1)}</span>
+        <span>•</span>
+        <span>${movie.release_date ? movie.release_date.split('-')[0] : ''}</span>
+      `;
+      document.getElementById('hero-desc').innerText = movie.overview;
+    }
+
+    function setupRow(items, elementId) {
+      const container = document.getElementById(elementId);
+      container.innerHTML = items.map(item => `
+        <div class="card">
+          <img src="https://image.tmdb.org/t/p/w500${item.poster_path}" alt="${item.title}">
+        </div>
+      `).join('');
+    }
+
+    init();
   </script>
 </body>
 </html>
