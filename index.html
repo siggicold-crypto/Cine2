@@ -179,10 +179,7 @@
       scroll-behavior: smooth;
     }
 
-    .row::-webkit-scrollbar {
-      height: 8px;
-    }
-
+    .row::-webkit-scrollbar { height: 8px; }
     .row::-webkit-scrollbar-thumb {
       background: rgba(255, 255, 255, 0.2);
       border-radius: 10px;
@@ -198,9 +195,7 @@
       cursor: pointer;
     }
 
-    .card:hover {
-      transform: translateY(-6px) scale(1.03);
-    }
+    .card:hover { transform: translateY(-6px) scale(1.03); }
 
     .card img {
       width: 100%;
@@ -209,29 +204,31 @@
       display: block;
     }
 
-    /* Video Trailer Modal */
+    /* Video Player Modal */
     .modal {
       display: none;
       position: fixed;
       inset: 0;
       z-index: 2000;
-      background: rgba(0,0,0,0.9);
+      background: rgba(0,0,0,0.95);
       justify-content: center;
       align-items: center;
     }
 
     .modal-content {
-      width: 80%;
-      max-width: 900px;
+      width: 90%;
+      max-width: 1000px;
       aspect-ratio: 16/9;
       position: relative;
+      background: #000;
+      border-radius: 12px;
+      overflow: hidden;
     }
 
     .modal iframe {
       width: 100%;
       height: 100%;
       border: none;
-      border-radius: 12px;
     }
 
     .close-modal {
@@ -265,7 +262,7 @@
       <div class="hero-meta" id="hero-meta"></div>
       <p class="hero-desc" id="hero-desc"></p>
       <div class="hero-actions">
-        <button class="btn-play" id="hero-play-btn"><i class="fa-solid fa-play"></i> Watch Trailer</button>
+        <button class="btn-play" id="hero-play-btn"><i class="fa-solid fa-play"></i> Watch Movie</button>
       </div>
     </div>
   </div>
@@ -285,11 +282,11 @@
     <div class="row" id="halloween-movies"></div>
   </div>
 
-  <!-- Video Modal Player -->
+  <!-- Streaming Player Modal -->
   <div class="modal" id="videoModal">
     <div class="modal-content">
       <span class="close-modal" onclick="closeModal()">&times;</span>
-      <iframe id="trailerPlayer" src="" allowfullscreen></iframe>
+      <iframe id="moviePlayer" src="" allowfullscreen></iframe>
     </div>
   </div>
 
@@ -324,39 +321,28 @@
         <span>${(item.release_date || '').split('-')[0]}</span>
       `;
       document.getElementById('hero-desc').innerText = item.overview;
-      document.getElementById('hero-play-btn').onclick = () => openTrailer(item.id);
+      document.getElementById('hero-play-btn').onclick = () => playMovie(item.id);
     }
 
     function renderRow(items, elementId) {
       const container = document.getElementById(elementId);
       const validItems = items.filter(i => i.poster_path);
       container.innerHTML = validItems.map(item => `
-        <div class="card" onclick="openTrailer(${item.id})">
+        <div class="card" onclick="playMovie(${item.id})">
           <img src="https://image.tmdb.org/t/p/w500${item.poster_path}" alt="${item.title}">
         </div>
       `).join('');
     }
 
-    async function openTrailer(id) {
-      try {
-        const res = await fetch(`https://api.themoviedb.org/3/movie/${id}/videos?api_key=${API_KEY}`);
-        const data = await res.json();
-        const trailer = data.results.find(v => v.type === 'Trailer') || data.results[0];
-        
-        if (trailer) {
-          document.getElementById('trailerPlayer').src = `https://www.youtube.com/embed/${trailer.key}?autoplay=1`;
-          document.getElementById('videoModal').style.display = 'flex';
-        } else {
-          alert('Trailer not available for this movie.');
-        }
-      } catch (err) {
-        alert('Could not load trailer.');
-      }
+    function playMovie(id) {
+      // Direct embed stream provider link
+      document.getElementById('moviePlayer').src = `https://vidsrc.to/embed/movie/${id}`;
+      document.getElementById('videoModal').style.display = 'flex';
     }
 
     function closeModal() {
       document.getElementById('videoModal').style.display = 'none';
-      document.getElementById('trailerPlayer').src = '';
+      document.getElementById('moviePlayer').src = '';
     }
 
     async function handleSearch(e) {
