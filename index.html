@@ -345,17 +345,25 @@
 
   <script>
     const API_URL = 'https://api.themoviedb.org/3';
-    const KEY = 'c028c29b7fb255919420b9e830e06000';
+    const READ_ACCESS_TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJhMzY3NzU0OTQ2MWU5MTE3YTQ2Mjg1MDU5MDNjYmFkOSIsIm5iZiI6MTc4ODAzMDIwNC4zNjMwMDAyLCJzdWIiOiI2YTkzMmNmY2E2M2YzZmQ4NGI5Yjg4MjIiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.Q1Easi0KN3casKOIm-txCk7yKdt0KdK6AbLl97kqU18';
+
+    const options = {
+      method: 'GET',
+      headers: {
+        accept: 'application/json',
+        Authorization: `Bearer ${READ_ACCESS_TOKEN}`
+      }
+    };
 
     async function init() {
-      fetchCategory(`${API_URL}/trending/movie/day?api_key=${KEY}`, 'trending-movies', true);
-      fetchCategory(`${API_URL}/search/movie?api_key=${KEY}&query=christmas`, 'christmas-movies');
-      fetchCategory(`${API_URL}/search/movie?api_key=${KEY}&query=halloween`, 'halloween-movies');
+      fetchCategory(`${API_URL}/trending/movie/day`, 'trending-movies', true);
+      fetchCategory(`${API_URL}/search/movie?query=christmas`, 'christmas-movies');
+      fetchCategory(`${API_URL}/search/movie?query=halloween`, 'halloween-movies');
     }
 
     async function fetchCategory(url, containerId, isTrending = false) {
       try {
-        const res = await fetch(url);
+        const res = await fetch(url, options);
         const data = await res.json();
         const container = document.getElementById(containerId);
 
@@ -426,10 +434,10 @@
       const query = e.target.value.trim();
       if (query.length > 1) {
         document.getElementById('row1-title').innerText = `Results for "${query}"`;
-        fetchCategory(`${API_URL}/search/movie?api_key=${KEY}&query=${encodeURIComponent(query)}`, 'trending-movies');
+        fetchCategory(`${API_URL}/search/movie?query=${encodeURIComponent(query)}`, 'trending-movies');
       } else if (query.length === 0) {
         document.getElementById('row1-title').innerText = 'Trending Movies';
-        fetchCategory(`${API_URL}/trending/movie/day?api_key=${KEY}`, 'trending-movies');
+        fetchCategory(`${API_URL}/trending/movie/day`, 'trending-movies');
       }
     }
 
