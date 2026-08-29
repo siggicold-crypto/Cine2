@@ -220,6 +220,7 @@
       background: rgba(0,0,0,0.95);
       justify-content: center;
       align-items: center;
+      flex-direction: column;
     }
 
     .modal-content {
@@ -236,6 +237,33 @@
       width: 100%;
       height: 100%;
       border: none;
+    }
+
+    .server-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      width: 90%;
+      max-width: 1000px;
+      justify-content: space-between;
+    }
+
+    .server-select-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .server-select {
+      background: var(--card-bg);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      outline: none;
+      cursor: pointer;
     }
 
     .settings-card {
@@ -267,12 +295,10 @@
     .color-dot:hover { transform: scale(1.15); }
 
     .close-modal {
-      position: absolute;
-      top: -40px;
-      right: 0;
       color: #fff;
-      font-size: 2rem;
+      font-size: 1.8rem;
       cursor: pointer;
+      line-height: 1;
     }
   </style>
 </head>
@@ -323,15 +349,27 @@
   </div>
 
   <div class="modal" id="videoModal">
-    <div class="modal-content">
+    <div class="server-controls">
+      <div class="server-select-wrapper">
+        <label for="serverSelect" style="font-size: 0.9rem; color: var(--muted);"><i class="fa-solid fa-server"></i> Server:</label>
+        <select id="serverSelect" class="server-select" onchange="changeServer(this.value)">
+          <option value="vidsrc_cc">Server 1 (VidSrc.cc)</option>
+          <option value="vidsrc_me">Server 2 (VidSrc.me)</option>
+          <option value="embed_su">Server 3 (Embed.su)</option>
+          <option value="2embed">Server 4 (2Embed)</option>
+          <option value="vidsrc_icu">Server 5 (VidSrc.icu)</option>
+        </select>
+      </div>
       <span class="close-modal" onclick="closeModal()">&times;</span>
+    </div>
+    <div class="modal-content">
       <iframe id="moviePlayer" src="" allowfullscreen allow="autoplay; encrypted-media"></iframe>
     </div>
   </div>
 
   <div class="modal" id="settingsModal">
     <div class="settings-card">
-      <span class="close-modal" style="top: 10px; right: 15px;" onclick="closeSettings()">&times;</span>
+      <span class="close-modal" style="position: absolute; top: 10px; right: 15px;" onclick="closeSettings()">&times;</span>
       <h3>Accent Color</h3>
       <div class="color-options">
         <div class="color-dot" style="background: #ffffff;" onclick="changeColor('#ffffff', '#000000')"></div>
@@ -346,6 +384,16 @@
   <script>
     const API_URL = 'https://api.themoviedb.org/3';
     const READ_ACCESS_TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJhMzY3NzU0OTQ2MWU5MTE3YTQ2Mjg1MDU5MDNjYmFkOSIsIm5iZiI6MTc4ODAzMDIwNC4zNjMwMDAyLCJzdWIiOiI2YTkzMmNmY2E2M2YzZmQ4NGI5Yjg4MjIiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.Q1Easi0KN3casKOIm-txCk7yKdt0KdK6AbLl97kqU18';
+
+    let currentMovieId = null;
+
+    const servers = {
+      vidsrc_cc: id => `https://vidsrc.cc/v2/embed/movie/${id}`,
+      vidsrc_me: id => `https://vidsrc.me/embed/movie?tmdb=${id}`,
+      embed_su: id => `https://embed.su/embed/movie/${id}`,
+      '2embed': id => `https://www.2embed.cc/embed/${id}`,
+      vidsrc_icu: id => `https://vidsrc.icu/embed/movie/${id}`
+    };
 
     const options = {
       method: 'GET',
@@ -407,8 +455,16 @@
     }
 
     function playMovie(id) {
-      document.getElementById('moviePlayer').src = `https://vidsrc.icu/embed/movie/${id}`;
+      currentMovieId = id;
+      const selectedServer = document.getElementById('serverSelect').value;
+      document.getElementById('moviePlayer').src = servers[selectedServer](id);
       document.getElementById('videoModal').style.display = 'flex';
+    }
+
+    function changeServer(serverKey) {
+      if (currentMovieId && servers[serverKey]) {
+        document.getElementById('moviePlayer').src = servers[serverKey](currentMovieId);
+      }
     }
 
     function closeModal() {
