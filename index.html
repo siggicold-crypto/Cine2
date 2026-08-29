@@ -282,11 +282,10 @@
     <div class="row" id="halloween-movies"></div>
   </div>
 
-  <!-- Streaming Player Modal -->
   <div class="modal" id="videoModal">
     <div class="modal-content">
       <span class="close-modal" onclick="closeModal()">&times;</span>
-      <iframe id="moviePlayer" src="" allowfullscreen></iframe>
+      <iframe id="moviePlayer" src="" allowfullscreen sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
     </div>
   </div>
 
@@ -295,68 +294,4 @@
 
     async function init() {
       fetchCategory(`https://api.themoviedb.org/3/trending/movie/day?api_key=${API_KEY}`, 'trending-movies', true);
-      fetchCategory(`https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=christmas`, 'christmas-movies');
-      fetchCategory(`https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=halloween`, 'halloween-movies');
-    }
-
-    async function fetchCategory(url, containerId, isTrending = false) {
-      try {
-        const res = await fetch(url);
-        const data = await res.json();
-        if (data.results && data.results.length > 0) {
-          if (isTrending) setupHero(data.results[0]);
-          renderRow(data.results, containerId);
-        }
-      } catch (err) {
-        console.error(err);
-      }
-    }
-
-    function setupHero(item) {
-      document.getElementById('hero').style.backgroundImage = `url(https://image.tmdb.org/t/p/original${item.backdrop_path})`;
-      document.getElementById('hero-title').innerText = item.title;
-      document.getElementById('hero-meta').innerHTML = `
-        <span>★ ${item.vote_average.toFixed(1)}</span>
-        <span>•</span>
-        <span>${(item.release_date || '').split('-')[0]}</span>
-      `;
-      document.getElementById('hero-desc').innerText = item.overview;
-      document.getElementById('hero-play-btn').onclick = () => playMovie(item.id);
-    }
-
-    function renderRow(items, elementId) {
-      const container = document.getElementById(elementId);
-      const validItems = items.filter(i => i.poster_path);
-      container.innerHTML = validItems.map(item => `
-        <div class="card" onclick="playMovie(${item.id})">
-          <img src="https://image.tmdb.org/t/p/w500${item.poster_path}" alt="${item.title}">
-        </div>
-      `).join('');
-    }
-
-    function playMovie(id) {
-      // Direct embed stream provider link
-      document.getElementById('moviePlayer').src = `https://vidsrc.to/embed/movie/${id}`;
-      document.getElementById('videoModal').style.display = 'flex';
-    }
-
-    function closeModal() {
-      document.getElementById('videoModal').style.display = 'none';
-      document.getElementById('moviePlayer').src = '';
-    }
-
-    async function handleSearch(e) {
-      const query = e.target.value.trim();
-      if (query.length > 2) {
-        document.getElementById('row1-title').innerText = `Results for "${query}"`;
-        fetchCategory(`https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}`, 'trending-movies');
-      } else if (query.length === 0) {
-        document.getElementById('row1-title').innerText = 'Trending Movies';
-        fetchCategory(`https://api.themoviedb.org/3/trending/movie/day?api_key=${API_KEY}`, 'trending-movies');
-      }
-    }
-
-    init();
-  </script>
-</body>
-</html>
+      fetchCategory(`https
