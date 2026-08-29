@@ -1,1 +1,79 @@
-a3677549461e9117a4628505903cbad9
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cine2 Movies</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #0d253f; color: white; padding: 20px; text-align: center; }
+    h1 { color: #90cea1; }
+    .search-container { margin: 20px 0; }
+    input { padding: 10px; width: 250px; border-radius: 5px; border: none; font-size: 16px; }
+    button { padding: 10px 15px; background: #01b4e4; border: none; color: white; font-size: 16px; border-radius: 5px; cursor: pointer; }
+    button:hover { background: #90cea1; color: #0d253f; }
+    .movie-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; margin-top: 20px; }
+    .card { background: #01b4e4; border-radius: 8px; width: 180px; padding: 10px; text-align: center; }
+    .card img { width: 100%; border-radius: 6px; }
+    .card h3 { font-size: 16px; margin: 10px 0 5px; }
+  </style>
+</head>
+<body>
+
+  <h1>🎬 Cine2 Movies</h1>
+
+  <div class="search-container">
+    <input type="text" id="searchInput" placeholder="Search for a movie...">
+    <button onclick="searchMovies()">Search</button>
+  </div>
+
+  <div id="movies" class="movie-grid">Loading movies...</div>
+
+  <script>
+    
+    const API_KEY = 'a3677549461e9117a4628505903cbad9';
+
+    // Load trending movies by default
+    fetchMovies(`https://api.themoviedb.org/3/trending/movie/day?api_key=${API_KEY}`);
+
+    function fetchMovies(url) {
+      fetch(url)
+        .then(res => res.json())
+        .then(data => {
+          const grid = document.getElementById('movies');
+          grid.innerHTML = '';
+
+          if (!data.results || data.results.length === 0) {
+            grid.innerText = 'No movies found.';
+            return;
+          }
+
+          data.results.forEach(movie => {
+            const poster = movie.poster_path 
+              ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` 
+              : 'https://via.placeholder.com/500x750?text=No+Poster';
+
+            grid.innerHTML += `
+              <div class="card">
+                <img src="${poster}" alt="${movie.title}">
+                <h3>${movie.title}</h3>
+                <p>⭐ ${movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A'}</p>
+              </div>
+            `;
+          });
+        })
+        .catch(err => {
+          document.getElementById('movies').innerText = 'Failed to load movies. Check your API key!';
+        });
+    }
+
+    function searchMovies() {
+      const query = document.getElementById('searchInput').value;
+      if (query.trim() !== '') {
+        const searchURL = `https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}`;
+        fetchMovies(searchURL);
+      }
+    }
+  </script>
+</body>
+</html>
+
