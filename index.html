@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cine2 | Stream</title>
   
-  <!-- SEO & Search Engine Indexing -->
   <meta name="description" content="Cine2 - Stream your favorite trending movies and shows online.">
   <meta name="keywords" content="Cine2, Cine 2, stream movies, watch movies online">
   <meta name="robots" content="index, follow">
@@ -34,7 +33,6 @@
       padding-bottom: 60px;
     }
 
-    /* Floating Navigation Bar */
     nav {
       position: fixed;
       top: 20px;
@@ -99,7 +97,6 @@
       color: var(--accent);
     }
 
-    /* Hero Banner */
     .hero {
       position: relative;
       height: 75vh;
@@ -168,7 +165,6 @@
 
     .btn-play:hover { transform: scale(1.05); }
 
-    /* Horizontal Scrolling Rows */
     .section {
       padding: 20px 80px;
     }
@@ -212,7 +208,6 @@
       display: block;
     }
 
-    /* Video Player & Settings Modals */
     .modal {
       display: none;
       position: fixed;
@@ -323,7 +318,6 @@
     <div class="row" id="halloween-movies"></div>
   </div>
 
-  <!-- Video Player Modal -->
   <div class="modal" id="videoModal">
     <div class="modal-content">
       <span class="close-modal" onclick="closeModal()">&times;</span>
@@ -331,7 +325,6 @@
     </div>
   </div>
 
-  <!-- Settings Modal -->
   <div class="modal" id="settingsModal">
     <div class="settings-card">
       <span class="close-modal" style="top: 10px; right: 15px;" onclick="closeSettings()">&times;</span>
@@ -347,12 +340,13 @@
   </div>
 
   <script>
-    const API_KEY = '15d2ce6054be42472323f083827a2ab2';
+    const API_URL = 'https://api.themoviedb.org/3';
+    const KEY = 'c028c29b7fb255919420b9e830e06000';
 
     async function init() {
-      fetchCategory(`https://api.themoviedb.org/3/trending/movie/day?api_key=${API_KEY}`, 'trending-movies', true);
-      fetchCategory(`https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=christmas`, 'christmas-movies');
-      fetchCategory(`https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=halloween`, 'halloween-movies');
+      fetchCategory(`${API_URL}/trending/movie/day?api_key=${KEY}`, 'trending-movies', true);
+      fetchCategory(`${API_URL}/search/movie?api_key=${KEY}&query=christmas`, 'christmas-movies');
+      fetchCategory(`${API_URL}/search/movie?api_key=${KEY}&query=halloween`, 'halloween-movies');
     }
 
     async function fetchCategory(url, containerId, isTrending = false) {
@@ -376,11 +370,11 @@
       document.getElementById('hero').style.backgroundImage = `url(https://image.tmdb.org/t/p/original${item.backdrop_path})`;
       document.getElementById('hero-title').innerText = item.title;
       document.getElementById('hero-meta').innerHTML = `
-        <span>★ ${item.vote_average.toFixed(1)}</span>
+        <span>★ ${(item.vote_average || 0).toFixed(1)}</span>
         <span>•</span>
         <span>${(item.release_date || '').split('-')[0]}</span>
       `;
-      document.getElementById('hero-desc').innerText = item.overview;
+      document.getElementById('hero-desc').innerText = item.overview || 'No description available.';
       document.getElementById('hero-play-btn').onclick = () => playMovie(item.id);
     }
 
@@ -428,10 +422,10 @@
       const query = e.target.value.trim();
       if (query.length > 1) {
         document.getElementById('row1-title').innerText = `Results for "${query}"`;
-        fetchCategory(`https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}`, 'trending-movies');
+        fetchCategory(`${API_URL}/search/movie?api_key=${KEY}&query=${encodeURIComponent(query)}`, 'trending-movies');
       } else if (query.length === 0) {
         document.getElementById('row1-title').innerText = 'Trending Movies';
-        fetchCategory(`https://api.themoviedb.org/3/trending/movie/day?api_key=${API_KEY}`, 'trending-movies');
+        fetchCategory(`${API_URL}/trending/movie/day?api_key=${KEY}`, 'trending-movies');
       }
     }
 
