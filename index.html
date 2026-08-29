@@ -23,9 +23,10 @@
       background-color: var(--bg);
       color: var(--text);
       overflow-x: hidden;
+      padding-bottom: 60px;
     }
 
-    /* Floating Navigation Bar with Search Input */
+    /* Floating Navigation Bar */
     nav {
       position: fixed;
       top: 20px;
@@ -80,7 +81,6 @@
       padding-left: 8px;
     }
 
-    /* Floating Logo */
     .brand-logo {
       position: fixed;
       top: 25px;
@@ -91,10 +91,10 @@
       color: #fff;
     }
 
-    /* Hero Banner Section */
+    /* Hero Banner */
     .hero {
       position: relative;
-      height: 80vh;
+      height: 75vh;
       width: 100%;
       background-size: cover;
       background-position: center top;
@@ -117,7 +117,7 @@
     }
 
     .hero-title {
-      font-size: 3.8rem;
+      font-size: 3.5rem;
       font-weight: 800;
       text-transform: uppercase;
       line-height: 1.1;
@@ -144,11 +144,6 @@
       overflow: hidden;
     }
 
-    .hero-actions {
-      display: flex;
-      gap: 12px;
-    }
-
     .btn-play {
       background: #ffffff;
       color: #000000;
@@ -165,30 +160,37 @@
 
     .btn-play:hover { transform: scale(1.05); }
 
-    /* Content Rows */
+    /* Horizontal Scrolling Rows */
     .section {
-      padding: 20px 80px 40px;
+      padding: 20px 80px;
     }
 
     .section-title {
       font-size: 1.3rem;
       font-weight: 700;
-      margin-bottom: 20px;
+      margin-bottom: 15px;
     }
 
     .row {
       display: flex;
-      gap: 20px;
+      gap: 18px;
       overflow-x: auto;
-      padding-bottom: 15px;
+      padding: 10px 0 20px;
       scroll-behavior: smooth;
     }
 
-    .row::-webkit-scrollbar { display: none; }
+    .row::-webkit-scrollbar {
+      height: 8px;
+    }
+
+    .row::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+    }
 
     .card {
-      flex: 0 0 200px;
-      border-radius: 16px;
+      flex: 0 0 180px;
+      border-radius: 14px;
       overflow: hidden;
       background: var(--card-bg);
       position: relative;
@@ -197,13 +199,14 @@
     }
 
     .card:hover {
-      transform: scale(1.05);
+      transform: translateY(-6px) scale(1.03);
     }
 
     .card img {
       width: 100%;
-      height: 300px;
+      height: 270px;
       object-fit: cover;
+      display: block;
     }
 
     /* Video Trailer Modal */
@@ -236,7 +239,7 @@
       top: -40px;
       right: 0;
       color: #fff;
-      font-size: 1.5rem;
+      font-size: 2rem;
       cursor: pointer;
     }
   </style>
@@ -273,8 +276,13 @@
   </div>
 
   <div class="section">
-    <h2 class="section-title">Trending Series</h2>
-    <div class="row" id="trending-series"></div>
+    <h2 class="section-title">🎄 Christmas Classics</h2>
+    <div class="row" id="christmas-movies"></div>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">🎃 Halloween Favorites</h2>
+    <div class="row" id="halloween-movies"></div>
   </div>
 
   <!-- Video Modal Player -->
@@ -289,58 +297,60 @@
     const API_KEY = 'a3677549461e9117a4628505903cbad9';
 
     async function init() {
-      fetchMovies();
-      fetchSeries();
+      fetchCategory(`https://api.themoviedb.org/3/trending/movie/day?api_key=${API_KEY}`, 'trending-movies', true);
+      fetchCategory(`https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=christmas`, 'christmas-movies');
+      fetchCategory(`https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=halloween`, 'halloween-movies');
     }
 
-    async function fetchMovies() {
-      const res = await fetch(`https://api.themoviedb.org/3/trending/movie/day?api_key=${API_KEY}`);
-      const data = await res.json();
-      if (data.results.length > 0) {
-        setupHero(data.results[0]);
-        renderRow(data.results, 'trending-movies', 'movie');
-      }
-    }
-
-    async function fetchSeries() {
-      const res = await fetch(`https://api.themoviedb.org/3/trending/tv/day?api_key=${API_KEY}`);
-      const data = await res.json();
-      if (data.results.length > 0) {
-        renderRow(data.results, 'trending-series', 'tv');
+    async function fetchCategory(url, containerId, isTrending = false) {
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.results && data.results.length > 0) {
+          if (isTrending) setupHero(data.results[0]);
+          renderRow(data.results, containerId);
+        }
+      } catch (err) {
+        console.error(err);
       }
     }
 
     function setupHero(item) {
       document.getElementById('hero').style.backgroundImage = `url(https://image.tmdb.org/t/p/original${item.backdrop_path})`;
-      document.getElementById('hero-title').innerText = item.title || item.name;
+      document.getElementById('hero-title').innerText = item.title;
       document.getElementById('hero-meta').innerHTML = `
         <span>★ ${item.vote_average.toFixed(1)}</span>
         <span>•</span>
-        <span>${(item.release_date || item.first_air_date || '').split('-')[0]}</span>
+        <span>${(item.release_date || '').split('-')[0]}</span>
       `;
       document.getElementById('hero-desc').innerText = item.overview;
-      document.getElementById('hero-play-btn').onclick = () => openTrailer('movie', item.id);
+      document.getElementById('hero-play-btn').onclick = () => openTrailer(item.id);
     }
 
-    function renderRow(items, elementId, type) {
+    function renderRow(items, elementId) {
       const container = document.getElementById(elementId);
-      container.innerHTML = items.map(item => `
-        <div class="card" onclick="openTrailer('${type}', ${item.id})">
-          <img src="https://image.tmdb.org/t/p/w500${item.poster_path}" alt="${item.title || item.name}">
+      const validItems = items.filter(i => i.poster_path);
+      container.innerHTML = validItems.map(item => `
+        <div class="card" onclick="openTrailer(${item.id})">
+          <img src="https://image.tmdb.org/t/p/w500${item.poster_path}" alt="${item.title}">
         </div>
       `).join('');
     }
 
-    async function openTrailer(type, id) {
-      const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}/videos?api_key=${API_KEY}`);
-      const data = await res.json();
-      const trailer = data.results.find(v => v.type === 'Trailer') || data.results[0];
-      
-      if (trailer) {
-        document.getElementById('trailerPlayer').src = `https://www.youtube.com/embed/${trailer.key}?autoplay=1`;
-        document.getElementById('videoModal').style.display = 'flex';
-      } else {
-        alert('Trailer not available for this title.');
+    async function openTrailer(id) {
+      try {
+        const res = await fetch(`https://api.themoviedb.org/3/movie/${id}/videos?api_key=${API_KEY}`);
+        const data = await res.json();
+        const trailer = data.results.find(v => v.type === 'Trailer') || data.results[0];
+        
+        if (trailer) {
+          document.getElementById('trailerPlayer').src = `https://www.youtube.com/embed/${trailer.key}?autoplay=1`;
+          document.getElementById('videoModal').style.display = 'flex';
+        } else {
+          alert('Trailer not available for this movie.');
+        }
+      } catch (err) {
+        alert('Could not load trailer.');
       }
     }
 
@@ -353,12 +363,10 @@
       const query = e.target.value.trim();
       if (query.length > 2) {
         document.getElementById('row1-title').innerText = `Results for "${query}"`;
-        const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}`);
-        const data = await res.json();
-        renderRow(data.results.filter(i => i.poster_path), 'trending-movies', 'movie');
+        fetchCategory(`https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}`, 'trending-movies');
       } else if (query.length === 0) {
         document.getElementById('row1-title').innerText = 'Trending Movies';
-        fetchMovies();
+        fetchCategory(`https://api.themoviedb.org/3/trending/movie/day?api_key=${API_KEY}`, 'trending-movies');
       }
     }
 
